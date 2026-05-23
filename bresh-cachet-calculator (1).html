@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRESH — Calculadora de Cachet</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f5f4f1;--bg3:#eceae4;
+  --text:#1a1a1a;--text2:#6b6b68;--text3:#a0a09d;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.22);
+  --ok-bg:#eaf3de;--ok-tx:#3b6d11;
+  --wn-bg:#faeeda;--wn-tx:#854f0b;
+  --er-bg:#fcebeb;--er-tx:#a32d2d;
+  --in-bg:#e6f1fb;--in-tx:#185fa5;
+  --r:8px;--rl:12px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1e1e1c;--bg2:#2a2a27;--bg3:#333330;
+    --text:#f0efea;--text2:#a8a8a4;--text3:#6b6b68;
+    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+    --ok-bg:#173404;--ok-tx:#c0dd97;
+    --wn-bg:#412402;--wn-tx:#fac775;
+    --er-bg:#501313;--er-tx:#f7c1c1;
+    --in-bg:#042c53;--in-tx:#b5d4f4;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:2rem 1rem}
+.wrap{width:100%;max-width:700px}
+.hdr{display:flex;align-items:center;gap:10px;margin-bottom:1.5rem}
+.logo{width:36px;height:36px;background:var(--text);border-radius:var(--r);display:flex;align-items:center;justify-content:center}
+.logo i{color:var(--bg);font-size:18px}
+.hdr h1{font-size:17px;font-weight:500;margin-bottom:2px}
+.hdr span{font-size:12px;color:var(--text2)}
+.sync{font-size:11px;padding:3px 9px;border-radius:var(--r);margin-left:auto;white-space:nowrap}
+.s-ok{background:var(--ok-bg);color:var(--ok-tx)}.s-wn{background:var(--wn-bg);color:var(--wn-tx)}
+.progress{display:flex;gap:6px;margin-bottom:1.5rem;align-items:center}
+.pb{height:4px;flex:1;border-radius:2px;background:var(--border);transition:background .2s}
+.pb.done{background:var(--text)}.pb.active{background:var(--text2)}
+.slbl{font-size:12px;color:var(--text3);white-space:nowrap}
+.step{display:none}.step.active{display:block}
+.st{font-size:15px;font-weight:500;margin-bottom:4px}
+.ss{font-size:13px;color:var(--text2);margin-bottom:1.25rem}
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--rl);padding:1.25rem;margin-bottom:12px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f label{font-size:13px;color:var(--text2)}
+.f input,.f select{font-size:14px;padding:8px 10px;border-radius:var(--r);border:0.5px solid var(--border2);background:var(--bg);color:var(--text);width:100%;outline:none}
+.f input:focus,.f select:focus{border-color:var(--text2)}
+.hint{font-size:12px;color:var(--text3)}
+.bm{font-size:12px;color:var(--in-tx);background:var(--in-bg);padding:3px 8px;border-radius:var(--r);display:inline-block}
+.sec{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 8px}
+.br{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem}
+button{cursor:pointer;font-size:14px;padding:8px 18px;border-radius:var(--r);border:0.5px solid var(--border2);background:transparent;color:var(--text);transition:background .15s}
+button:hover{background:var(--bg2)}
+button.p{background:var(--text);color:var(--bg);border-color:transparent}
+button.p:hover{opacity:.82;background:var(--text)}
+.aw{position:relative}
+.dd{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--r);max-height:230px;overflow-y:auto;z-index:200;display:none;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.dd.open{display:block}
+.ddi{padding:9px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.ddi:hover,.ddi.hi{background:var(--bg2)}
+.din{flex:1;font-weight:500}
+.dme{font-size:11px;color:var(--text2)}
+.dtr{font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg3);color:var(--text2)}
+.dem{padding:12px;font-size:13px;color:var(--text2);text-align:center}
+.chip{background:var(--bg2);border-radius:var(--r);padding:10px 14px;display:none;margin-top:8px}
+.crow{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--text2)}
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.mc{background:var(--bg2);border-radius:var(--r);padding:12px}
+.ml{font-size:12px;color:var(--text2);margin-bottom:4px}
+.mv{font-size:20px;font-weight:500}
+.mv.ok{color:var(--ok-tx)}.mv.er{color:var(--er-tx)}
+.scg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.sc{border:0.5px solid var(--border);border-radius:var(--rl);padding:1rem;background:var(--bg)}
+.sc.win{border:2px solid var(--ok-tx)}
+.slb{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.scm{font-size:22px;font-weight:500;margin-bottom:4px}
+.sdt{font-size:12px;color:var(--text2)}
+.bdg{display:inline-block;font-size:11px;padding:3px 8px;border-radius:var(--r);margin-bottom:6px;background:var(--ok-bg);color:var(--ok-tx)}
+.rd{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:14px}
+.rd:last-child{border-bottom:none}
+.rl{color:var(--text2)}
+.vb{border-radius:var(--rl);padding:1.25rem;margin-top:12px;border:0.5px solid var(--border)}
+hr{border:none;border-top:0.5px solid var(--border);margin:10px 0}
+@media(max-width:520px){.fg{grid-template-columns:1fr}.scg{grid-template-columns:1fr}}
+</style>
+</head>
+<body><div class="wrap">
+
+<div class="hdr">
+  <div class="logo"><i class="ti ti-calculator"></i></div>
+  <div><h1>Calculadora de Cachet</h1><span>BRESH Decision Pricing Model</span></div>
+  <span class="sync s-wn" id="sync">Cargando venues...</span>
+</div>
+
+<div class="progress">
+  <div class="pb active" id="pb1"></div><div class="pb" id="pb2"></div>
+  <div class="pb" id="pb3"></div><div class="pb" id="pb4"></div>
+  <span class="slbl" id="slbl">Paso 1 de 4</span>
+</div>
+
+<!-- STEP 1 -->
+<div class="step active" id="s1">
+  <p class="st">Venue y mercado</p>
+  <p class="ss">Buscá el venue — se autocompleta desde la base de datos de Bresh, actualizada en tiempo real.</p>
+  <div class="card">
+    <div class="fg">
+      <div class="f">
+        <label>Venue <span style="color:var(--er-tx)">★</span></label>
+        <div class="aw">
+          <input type="text" id="vi" placeholder="Escribí para buscar..." autocomplete="off"
+            oninput="fv(this.value)" onkeydown="kn(event)" onfocus="fv(this.value)" onblur="setTimeout(closeDD,180)">
+          <div class="dd" id="dd" role="listbox"></div>
+        </div>
+        <span class="hint" id="vstatus">Cargando lista...</span>
+      </div>
+      <div class="f">
+        <label>Mes del evento</label>
+        <select id="month" onchange="uc()">
+          <option value="">Seleccioná...</option>
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" id="mf" style="display:none">
+      <div class="f"><label>Ciudad / Plaza</label><input type="text" id="cm" placeholder="Ej: Buenos Aires"></div>
+      <div class="f"><label>Mercado</label>
+        <select id="msel" onchange="uc()">
+          <option value="">Seleccioná...</option>
+          <option value="ARGENTINA">Argentina</option><option value="SPAIN">España</option>
+          <option value="USA">USA</option><option value="ITALY">Italia</option>
+          <option value="FRANCE">Francia</option><option value="LATAM_EX_ARG">LATAM (exc. ARG)</option>
+          <option value="EUROPE_EX_SP_IT_FR">Europa (exc. ESP/ITA/FRA)</option><option value="ROW">Resto del mundo</option>
+        </select>
+      </div>
+    </div>
+    <div class="f" style="margin-bottom:0">
+      <label>Capacidad del venue</label>
+      <input type="number" id="cap" placeholder="Se carga automáticamente" min="0" oninput="uc()">
+      <span class="hint" id="capht">Se autocompleta al seleccionar el venue</span>
+    </div>
+    <div class="chip" id="chip"><div class="crow" id="chiprow"></div></div>
+  </div>
+  <div class="br"><button class="p" onclick="go(2)">Continuar <i class="ti ti-arrow-right"></i></button></div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" id="s2">
+  <p class="st">Inputs del escenario</p>
+  <p class="ss">Completá los datos del deal. Los benchmarks aparecen automáticamente según el mercado y temporada.</p>
+  <div class="card">
+    <div class="sec">Cachet</div>
+    <div class="fg">
+      <div class="f"><label>Cachet Fee (USD) ★</label><input type="number" id="cf" placeholder="Ej: 10000" min="0" oninput="uc()"><span class="bm" id="bmc">Benchmark: —</span></div>
+      <div class="f"><label>Costos directos Bresh (USD) ★</label><input type="number" id="bc" placeholder="Ej: 4000" min="0" oninput="uc()"><span class="bm" id="bmd">Benchmark: —</span><span class="hint">Viajes, artista, marketing</span></div>
+    </div>
+    <div class="sec">Residencia</div>
+    <div class="fg">
+      <div class="f"><label>Tickets esperados ★</label><input type="number" id="tk" placeholder="Tu estimación" min="0" oninput="uc()"><span class="bm" id="bmt">Benchmark: —</span></div>
+      <div class="f"><label>Precio ticket — Residencia (USD)</label><input type="number" id="tp" placeholder="Vacío = benchmark" min="0" oninput="uc()"><span class="bm" id="bmp">Benchmark: —</span></div>
+    </div>
+    <div class="fg">
+      <div class="f"><label>F&amp;B por persona (USD)</label><input type="number" id="fb" placeholder="Vacío = benchmark" min="0" oninput="uc()"><span class="bm" id="bmf">Benchmark: —</span></div>
+      <div class="f"><label>Costo de producción bruto (USD)</label><input type="number" id="pc" placeholder="Vacío = cap × cost/seat" min="0" oninput="uc()"><span class="bm" id="bma">Auto: —</span></div>
+    </div>
+    <div class="fg">
+      <div class="f"><label>Alquiler del venue (USD)</label><input type="number" id="vr" placeholder="Vacío = 12% del costo" min="0" oninput="uc()"></div>
+      <div class="f"><label>% Share Bresh — Costo residencia</label><input type="number" id="cs" placeholder="Default: 30%" min="0" max="100" oninput="uc()"><span class="hint">Si se deja vacío: 30%</span></div>
+    </div>
+  </div>
+  <div class="br">
+    <button onclick="go(1)"><i class="ti ti-arrow-left"></i> Volver</button>
+    <button class="p" onclick="go(3)">Evaluar riesgo <i class="ti ti-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step" id="s3">
+  <p class="st">Prima de riesgo</p>
+  <p class="ss">Evaluá 5 dimensiones para calibrar el cachet óptimo automáticamente.</p>
+  <div class="card">
+    <div id="riskf"></div>
+    <hr>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span style="font-size:14px;font-weight:500">Prima resultante</span>
+      <span style="font-size:18px;font-weight:500" id="rr">—</span>
+    </div>
+    <div style="font-size:13px" id="ri"></div>
+  </div>
+  <div class="br">
+    <button onclick="go(2)"><i class="ti ti-arrow-left"></i> Volver</button>
+    <button class="p" onclick="go(4)">Ver veredicto <i class="ti ti-arrow-right"></i></button>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step" id="s4">
+  <p class="st">Resumen ejecutivo</p>
+  <p class="ss" id="rsub">—</p>
+  <div class="mg">
+    <div class="mc"><div class="ml">GRE total</div><div class="mv" id="rg">—</div></div>
+    <div class="mc"><div class="ml">CM — Cachet A</div><div class="mv" id="ra">—</div></div>
+    <div class="mc"><div class="ml">Cachet óptimo (B)</div><div class="mv" id="ro">—</div></div>
+    <div class="mc"><div class="ml">Break-even tickets</div><div class="mv" id="rb">—</div></div>
+  </div>
+  <div class="sec">Comparación de escenarios</div>
+  <div class="scg" id="scc"></div>
+  <div class="sec">Detalle P&amp;L</div>
+  <div class="card" id="pnl"></div>
+  <div class="vb" id="vb"><div style="font-size:14px;font-weight:500;margin-bottom:6px">Veredicto estratégico</div><div style="font-size:14px" id="vt">—</div></div>
+  <div class="br" style="margin-top:1rem"><button onclick="go(1)"><i class="ti ti-refresh"></i> Nueva simulación</button></div>
+</div>
+
+</div>
+<script>
+const VF=[{"n":"(11:11)","te":"NORTH AMERICA","co":"USA","pl":"EL PASO","ca":1800,"ti":"TIER E"},{"n":"10 HORAS ECUADOR","te":"LATIN AMERICA","co":"ECUADOR","pl":"IBARRA","ca":1500,"ti":"TIER E"},{"n":"170 RUSSELL","te":"ROW","co":"AUSTRALIA","pl":"MELBOURNE","ca":1050,"ti":"TIER F"},{"n":"25 EVENTOS","te":"LATIN AMERICA","co":"ARGENTINA","pl":"25 DE MAYO","ca":2000,"ti":"TIER E"},{"n":"CASCANUECES","te":"LATIN AMERICA","co":"ARGENTINA","pl":"LOS TOLDOS","ca":1500,"ti":"TIER E"},{"n":"A75","te":"EUROPE","co":"SWEDEN","pl":"ESTOCOLMO","ca":1800,"ti":"TIER E"},{"n":"ALBERT HALL","te":"EUROPE","co":"UK","pl":"MANCHESTER","ca":2500,"ti":"TIER D"},{"n":"ALZETTE","te":"EUROPE","co":"LUXEMBURGO","pl":"SUR","ca":1500,"ti":"TIER E"},{"n":"AMBRA","te":"EUROPE","co":"ITALY","pl":"SAN TEODORO","ca":2500,"ti":"TIER D"},{"n":"AMNESIA","te":"EUROPE","co":"SPAIN","pl":"IBIZA","ca":7000,"ti":"TIER A"},{"n":"AMNESIA (MAIN ROOM)","te":"EUROPE","co":"SPAIN","pl":"IBIZA","ca":2000,"ti":"TIER E"},{"n":"ANIMA","te":"EUROPE","co":"ITALY","pl":"TREVISO","ca":1300,"ti":"TIER F"},{"n":"ANOMALIE","te":"EUROPE","co":"GERMANY","pl":"BERLIN","ca":1000,"ti":"TIER F"},{"n":"ESPACIO COSTANERA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"ZÁRATE","ca":2000,"ti":"TIER E"},{"n":"GARAGE COSTANERA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"ZÁRATE","ca":1300,"ti":"TIER F"},{"n":"ARENA MAIPU R","te":"LATIN AMERICA","co":"ARGENTINA","pl":"MAIPU","ca":2500,"ti":"TIER D"},{"n":"ARENA MAIPU C","te":"LATIN AMERICA","co":"ARGENTINA","pl":"MAIPU","ca":4000,"ti":"TIER C"},{"n":"ARENA REAL","te":"LATIN AMERICA","co":"BOLIVIA","pl":"SANTA CRUZ DE LA SIERRA","ca":3500,"ti":"TIER C"},{"n":"AUDIO CLUB","te":"LATIN AMERICA","co":"BRAZIL","pl":"SAN PABLO","ca":2500,"ti":"TIER D"},{"n":"AUGUST HALL","te":"NORTH AMERICA","co":"USA","pl":"SAN FRANCISCO","ca":950,"ti":"TIER F"},{"n":"AUTOCINE 1","te":"EUROPE","co":"SPAIN","pl":"MALAGA","ca":8000,"ti":"TIER A"},{"n":"AUTOCINE 2","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":4500,"ti":"TIER B"},{"n":"BACARRA","te":"EUROPE","co":"SPAIN","pl":"GANDIA","ca":1800,"ti":"TIER E"},{"n":"BAYSIDE","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":3000,"ti":"TIER D"},{"n":"BCM","te":"EUROPE","co":"SPAIN","pl":"MALLORCA","ca":4000,"ti":"TIER C"},{"n":"BEACH CLUB MEDUSA","te":"EUROPE","co":"SPAIN","pl":"CULLERA","ca":2000,"ti":"TIER E"},{"n":"BEC","te":"EUROPE","co":"SPAIN","pl":"BILBAO","ca":4000,"ti":"TIER C"},{"n":"BENDU","te":"LATIN AMERICA","co":"ARGENTINA","pl":"MAR DEL PLATA","ca":5000,"ti":"TIER B"},{"n":"BIG BEN","te":"EUROPE","co":"SPAIN","pl":"LLEIDA","ca":3500,"ti":"TIER C"},{"n":"BIG NIGHT LIVE","te":"NORTH AMERICA","co":"USA","pl":"BOSTON","ca":1400,"ti":"TIER F"},{"n":"BIOCERES ARENA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"ROSARIO","ca":2800,"ti":"TIER D"},{"n":"BLISS","te":"EUROPE","co":"PORTUGAL","pl":"VILA MOURA","ca":2500,"ti":"TIER D"},{"n":"BOOTSHAUS","te":"EUROPE","co":"GERMANY","pl":"KOLN","ca":1600,"ti":"TIER E"},{"n":"BOSQUE LUZ","te":"LATIN AMERICA","co":"CHILE","pl":"SANTIAGO","ca":3000,"ti":"TIER D"},{"n":"BOUTIQUE","te":"LATIN AMERICA","co":"ARGENTINA","pl":"PINAMAR","ca":5000,"ti":"TIER B"},{"n":"BRAGADO","te":"LATIN AMERICA","co":"ARGENTINA","pl":"BRAGADO","ca":3500,"ti":"TIER C"},{"n":"BRISA OPEN AIR","te":"EUROPE","co":"SPAIN","pl":"GAVA","ca":2500,"ti":"TIER D"},{"n":"CABARET FESTIVAL","te":"EUROPE","co":"SPAIN","pl":"SEVILLA","ca":3000,"ti":"TIER D"},{"n":"CAMPUS ULPGC","te":"EUROPE","co":"SPAIN","pl":"LAS PALMAS DE GRAN CANARIA","ca":10000,"ti":"TIER A"},{"n":"CASA BOUQUET","te":"LATIN AMERICA","co":"ECUADOR","pl":"CUMBAYÁ","ca":1800,"ti":"TIER E"},{"n":"CENTRAL PARK","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":4000,"ti":"TIER C"},{"n":"CENTRO COMERCIAL LA RAMBLA","te":"EUROPE","co":"SPAIN","pl":"CARTAGENA","ca":3000,"ti":"TIER D"},{"n":"CENTRO CONVENCIONES ARENA","te":"LATIN AMERICA","co":"PERU","pl":"LIMA","ca":2000,"ti":"TIER E"},{"n":"CENTRO DE CONVENCIONES","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SALTA","ca":4000,"ti":"TIER C"},{"n":"CENTRO DE CONVENCIONES COSTA RICA","te":"LATIN AMERICA","co":"COSTA RICA","pl":"SAN JOSE","ca":2600,"ti":"TIER D"},{"n":"CENTRO DE CONVENCIONES OUTDOOR","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SALTA","ca":7000,"ti":"TIER A"},{"n":"CENTRO PARQUE","te":"LATIN AMERICA","co":"CHILE","pl":"SANTIAGO","ca":2200,"ti":"TIER E"},{"n":"CHATEAU PARK","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CORDOBA","ca":6000,"ti":"TIER A"},{"n":"CHATEAU PARK R2","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CORDOBA","ca":3500,"ti":"TIER C"},{"n":"CIUDAD CULTURAL","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SS DE JUJUY","ca":4000,"ti":"TIER C"},{"n":"CIUDAD REAL BEACH FESTIVAL","te":"EUROPE","co":"SPAIN","pl":"CIUDAD REAL","ca":4000,"ti":"TIER C"},{"n":"CLUB CAPITAL","te":"LATIN AMERICA","co":"CHILE","pl":"CONCEPCIÓN","ca":1800,"ti":"TIER E"},{"n":"CLUB DE POLO MACHALI","te":"LATIN AMERICA","co":"CHILE","pl":"RANCAGUA","ca":3000,"ti":"TIER D"},{"n":"CLUB ESPAÑOL","te":"LATIN AMERICA","co":"ARGENTINA","pl":"POSADAS","ca":3000,"ti":"TIER D"},{"n":"CLUB HIPICO","te":"LATIN AMERICA","co":"CHILE","pl":"SANTIAGO","ca":6000,"ti":"TIER A"},{"n":"CLUB PANAMA","te":"EUROPE","co":"NETHERLANDS","pl":"AMSTERDAM","ca":1100,"ti":"TIER F"},{"n":"CLUB PARAGUAY","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CORDOBA","ca":1200,"ti":"TIER F"},{"n":"CLUB PINHEIROS","te":"LATIN AMERICA","co":"BRAZIL","pl":"SAN PABLO","ca":3000,"ti":"TIER D"},{"n":"CLUB UNION","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SANTA FE","ca":3500,"ti":"TIER C"},{"n":"COCOA","te":"EUROPE","co":"SPAIN","pl":"MATARÓ","ca":2200,"ti":"TIER E"},{"n":"CONCERT MUSIC","te":"EUROPE","co":"SPAIN","pl":"CÁDIZ","ca":5000,"ti":"TIER B"},{"n":"CONCORD MUSIC HALL","te":"NORTH AMERICA","co":"USA","pl":"CHICAGO","ca":1150,"ti":"TIER F"},{"n":"CUARTEL DE ARTILLERIA","te":"EUROPE","co":"SPAIN","pl":"MURCIA","ca":5000,"ti":"TIER B"},{"n":"DAER","te":"NORTH AMERICA","co":"USA","pl":"HOLLYWOOD","ca":1000,"ti":"TIER F"},{"n":"DESEO CLUB","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":1450,"ti":"TIER F"},{"n":"DIVERBOSC","te":"EUROPE","co":"SPAIN","pl":"BARCELONA","ca":4000,"ti":"TIER C"},{"n":"DOUGLAS HAIG","te":"LATIN AMERICA","co":"ARGENTINA","pl":"PERGAMINO","ca":15000,"ti":"TIER A"},{"n":"DUAM","te":"LATIN AMERICA","co":"ARGENTINA","pl":"NEUQUEN","ca":3500,"ti":"TIER C"},{"n":"ECHOSTAGE","te":"NORTH AMERICA","co":"USA","pl":"DC","ca":2200,"ti":"TIER E"},{"n":"ELECTRIC BRIXTON","te":"EUROPE","co":"UK","pl":"LONDRES","ca":1700,"ti":"TIER E"},{"n":"EMBALSINA LAKE FEST","te":"LATIN AMERICA","co":"ARGENTINA","pl":"EMBALSE","ca":5000,"ti":"TIER B"},{"n":"ENCORE BEACH CLUB","te":"NORTH AMERICA","co":"USA","pl":"LAS VEGAS","ca":3500,"ti":"TIER C"},{"n":"ENJOY","te":"LATIN AMERICA","co":"CHILE","pl":"PUCON","ca":3000,"ti":"TIER D"},{"n":"ES JARDI","te":"EUROPE","co":"SPAIN","pl":"MALLORCA","ca":5000,"ti":"TIER B"},{"n":"ESPACIO MONACO","te":"LATIN AMERICA","co":"CHILE","pl":"PUCÓN","ca":2725,"ti":"TIER D"},{"n":"ESPACIO ZITY","te":"EUROPE","co":"SPAIN","pl":"ZARAGOZA","ca":15000,"ti":"TIER A"},{"n":"OLD SKULL","te":"LATIN AMERICA","co":"ARGENTINA","pl":"PILAR","ca":3500,"ti":"TIER C"},{"n":"ESTADIO ANTONIO ROMERO","te":"LATIN AMERICA","co":"ARGENTINA","pl":"FORMOSA","ca":5000,"ti":"TIER B"},{"n":"ESTADIO DE LA VICTORIA","te":"EUROPE","co":"SPAIN","pl":"JAEN","ca":9000,"ti":"TIER A"},{"n":"ESTADIO GEBA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":10000,"ti":"TIER A"},{"n":"ESTADIO GEBA V2","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":8000,"ti":"TIER A"},{"n":"ESTANCIA LOS CONEJOS","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SAN VICENTE","ca":4000,"ti":"TIER C"},{"n":"FABRIK","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":8000,"ti":"TIER A"},{"n":"FABRIK C","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":8000,"ti":"TIER A"},{"n":"FABRIQUE","te":"EUROPE","co":"ITALY","pl":"MILAN","ca":3300,"ti":"TIER D"},{"n":"FACTORY TOWN","te":"NORTH AMERICA","co":"USA","pl":"MIAMI","ca":5000,"ti":"TIER B"},{"n":"FORESTDAN","te":"LATIN AMERICA","co":"ARGENTINA","pl":"PILAR","ca":2500,"ti":"TIER D"},{"n":"NATIVE BEACH","te":"LATIN AMERICA","co":"ARGENTINA","pl":"PILAR","ca":4000,"ti":"TIER C"},{"n":"HARD ROCK TAMPA","te":"NORTH AMERICA","co":"USA","pl":"TAMPA","ca":2500,"ti":"TIER D"},{"n":"HEMKADE 48","te":"EUROPE","co":"NETHERLANDS","pl":"AMSTERDAM","ca":3500,"ti":"TIER C"},{"n":"ICONICA FEST","te":"EUROPE","co":"SPAIN","pl":"SEVILLA","ca":5000,"ti":"TIER B"},{"n":"IFEMA","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":12000,"ti":"TIER A"},{"n":"IFEVI","te":"EUROPE","co":"SPAIN","pl":"VIGO","ca":5000,"ti":"TIER B"},{"n":"INFECAR","te":"EUROPE","co":"SPAIN","pl":"LAS PALMAS DE GRAN CANARIA","ca":10000,"ti":"TIER A"},{"n":"KINGS","te":"EUROPE","co":"ITALY","pl":"JESOLO","ca":2600,"ti":"TIER D"},{"n":"KNOCKDOWN CENTER","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":3100,"ti":"TIER D"},{"n":"KOKO","te":"EUROPE","co":"UK","pl":"LONDRES","ca":1600,"ti":"TIER E"},{"n":"LA CLAIRIERE","te":"EUROPE","co":"FRANCE","pl":"PARIS","ca":2200,"ti":"TIER E"},{"n":"LA DAURADA","te":"EUROPE","co":"SPAIN","pl":"VILANOVA I LA GELTRÚ","ca":2500,"ti":"TIER D"},{"n":"LA PINILLA","te":"EUROPE","co":"SPAIN","pl":"SEGOVIA","ca":3250,"ti":"TIER D"},{"n":"LAS ROCAS BEACH CLUB","te":"EUROPE","co":"SPAIN","pl":"TENERIFE","ca":3500,"ti":"TIER C"},{"n":"LEMON ARENA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SANTA FE","ca":2700,"ti":"TIER D"},{"n":"LX FACTORY","te":"EUROPE","co":"PORTUGAL","pl":"LISBOA","ca":2500,"ti":"TIER D"},{"n":"M2","te":"NORTH AMERICA","co":"USA","pl":"MIAMI","ca":1500,"ti":"TIER E"},{"n":"MAGAZZINI GENERALI","te":"EUROPE","co":"ITALY","pl":"MILAN","ca":1500,"ti":"TIER E"},{"n":"MALAGA FORUM","te":"EUROPE","co":"SPAIN","pl":"MALAGA","ca":4000,"ti":"TIER C"},{"n":"MALUA","te":"EUROPE","co":"ITALY","pl":"FERRARA","ca":2000,"ti":"TIER E"},{"n":"MARCHA LIVE FEST","te":"EUROPE","co":"SPAIN","pl":"SEGOVIA","ca":5000,"ti":"TIER B"},{"n":"MARCHICA","te":"EUROPE","co":"SPAIN","pl":"FORMIGAL","ca":3500,"ti":"TIER C"},{"n":"MARMARELLA","te":"EUROPE","co":"SPAIN","pl":"ALICANTE","ca":4000,"ti":"TIER C"},{"n":"MAS PALOMAS / OASIS","te":"EUROPE","co":"SPAIN","pl":"LAS PALMAS","ca":6000,"ti":"TIER A"},{"n":"MINISTRY OF SOUND","te":"EUROPE","co":"UK","pl":"LONDRES","ca":2000,"ti":"TIER E"},{"n":"MUFFATWERK","te":"EUROPE","co":"GERMANY","pl":"MUNICH","ca":1200,"ti":"TIER F"},{"n":"MUTE","te":"LATIN AMERICA","co":"ARGENTINA","pl":"MAR DEL PLATA","ca":6000,"ti":"TIER A"},{"n":"MUTE (XL)","te":"LATIN AMERICA","co":"ARGENTINA","pl":"MAR DEL PLATA","ca":15000,"ti":"TIER A"},{"n":"NACHTRESIDENZ","te":"EUROPE","co":"GERMANY","pl":"DUSSELDORF","ca":1500,"ti":"TIER E"},{"n":"NAVARRA ARENA","te":"EUROPE","co":"SPAIN","pl":"PAMPLONA","ca":3250,"ti":"TIER D"},{"n":"NEW CITY GAS","te":"NORTH AMERICA","co":"CANADA","pl":"MONTREAL","ca":2500,"ti":"TIER D"},{"n":"NICE","te":"EUROPE","co":"ITALY","pl":"ROMA","ca":2900,"ti":"TIER D"},{"n":"NICETO CLUB","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":1100,"ti":"TIER F"},{"n":"NUMA CLUB","te":"EUROPE","co":"ITALY","pl":"BOLOGNA","ca":1300,"ti":"TIER F"},{"n":"OASIS PUNTA CARRASCO","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":3000,"ti":"TIER D"},{"n":"OPEN PARK","te":"LATIN AMERICA","co":"URUGUAY","pl":"PUNTA DEL ESTE","ca":6000,"ti":"TIER A"},{"n":"OPUS","te":"EUROPE","co":"ITALY","pl":"ROMA","ca":2000,"ti":"TIER E"},{"n":"OUTERNET","te":"EUROPE","co":"UK","pl":"LONDRES","ca":2000,"ti":"TIER E"},{"n":"P12","te":"LATIN AMERICA","co":"BRAZIL","pl":"FLORIANOPOLIS","ca":2000,"ti":"TIER E"},{"n":"PAPAGAYO & SIAM PARK","te":"EUROPE","co":"SPAIN","pl":"TENERIFE","ca":6000,"ti":"TIER A"},{"n":"PAPILLON","te":"EUROPE","co":"SPAIN","pl":"GIRONA","ca":1500,"ti":"TIER E"},{"n":"PIER 17 C","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":3500,"ti":"TIER C"},{"n":"PIER 17 R","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":3500,"ti":"TIER C"},{"n":"PLAZA DE LA MUSICA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CORDOBA","ca":5000,"ti":"TIER B"},{"n":"PLAZA DE TOROS UY","te":"LATIN AMERICA","co":"URUGUAY","pl":"COLONIA","ca":5000,"ti":"TIER B"},{"n":"POBLE ESPANYOL","te":"EUROPE","co":"SPAIN","pl":"BARCELONA","ca":5200,"ti":"TIER B"},{"n":"PONEY CLUB","te":"EUROPE","co":"FRANCE","pl":"TOULOUSE","ca":4500,"ti":"TIER B"},{"n":"RADIUS","te":"NORTH AMERICA","co":"USA","pl":"CHICAGO","ca":3000,"ti":"TIER D"},{"n":"RAMOVA","te":"NORTH AMERICA","co":"USA","pl":"CHICAGO","ca":1500,"ti":"TIER E"},{"n":"RECINTO MULTIUSOS","te":"EUROPE","co":"SPAIN","pl":"SALAMANCA","ca":6000,"ti":"TIER A"},{"n":"ROLL AND ROCK","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SANTA FE","ca":4000,"ti":"TIER C"},{"n":"ROYAL ARENA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SAN LUIS","ca":4000,"ti":"TIER C"},{"n":"ROYALE","te":"NORTH AMERICA","co":"USA","pl":"BOSTON","ca":1300,"ti":"TIER F"},{"n":"SALA APOLO","te":"EUROPE","co":"SPAIN","pl":"BARCELONA","ca":1600,"ti":"TIER E"},{"n":"SALA APOLO XL","te":"EUROPE","co":"SPAIN","pl":"BARCELONA","ca":2600,"ti":"TIER D"},{"n":"SALA LA RIVIERA","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":2600,"ti":"TIER D"},{"n":"SALA PANDORA","te":"EUROPE","co":"SPAIN","pl":"SEVILLA","ca":1500,"ti":"TIER E"},{"n":"SALA PELICANO","te":"EUROPE","co":"SPAIN","pl":"LA CORUÑA","ca":2500,"ti":"TIER D"},{"n":"SIAM PARK","te":"EUROPE","co":"SPAIN","pl":"TENERIFE","ca":6000,"ti":"TIER A"},{"n":"SILO","te":"NORTH AMERICA","co":"USA","pl":"DALLAS","ca":3100,"ti":"TIER D"},{"n":"SILOS ARENA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"MAR DEL PLATA","ca":3500,"ti":"TIER C"},{"n":"SITIO VELODROMO","te":"LATIN AMERICA","co":"URUGUAY","pl":"MONTEVIDEO","ca":6000,"ti":"TIER A"},{"n":"SKYWAY THEATRE","te":"NORTH AMERICA","co":"USA","pl":"MINNEAPOLIS","ca":2200,"ti":"TIER E"},{"n":"SPACE","te":"EUROPE","co":"ITALY","pl":"RICCIONE","ca":5000,"ti":"TIER B"},{"n":"SSP","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CABA","ca":2500,"ti":"TIER D"},{"n":"STARLITE","te":"EUROPE","co":"SPAIN","pl":"MARBELLA","ca":2000,"ti":"TIER E"},{"n":"STARLITE IFEMA","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":5000,"ti":"TIER B"},{"n":"STUDIO 338","te":"EUROPE","co":"UK","pl":"LONDRES","ca":2200,"ti":"TIER E"},{"n":"SUMMERSTAGE","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":4000,"ti":"TIER C"},{"n":"SUPREMO","te":"NORTH AMERICA","co":"MEXICO","pl":"CDMX","ca":1100,"ti":"TIER F"},{"n":"TATTERSALL DE SAN ISIDRO","te":"LATIN AMERICA","co":"ARGENTINA","pl":"SAN ISIDRO","ca":2000,"ti":"TIER E"},{"n":"TERMINAL 5","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":3000,"ti":"TIER D"},{"n":"TERMINAL 7","te":"EUROPE","co":"FRANCE","pl":"PARIS","ca":2200,"ti":"TIER E"},{"n":"TERRA SOLIS","te":"ROW","co":"UAE","pl":"DUBAI","ca":3500,"ti":"TIER C"},{"n":"TERRAMAR","te":"EUROPE","co":"SPAIN","pl":"SITGES","ca":1600,"ti":"TIER E"},{"n":"THE BELLWETHER","te":"NORTH AMERICA","co":"USA","pl":"LOS ANGELES","ca":1500,"ti":"TIER E"},{"n":"THE CONCOURSE PROJECT","te":"NORTH AMERICA","co":"USA","pl":"AUSTIN","ca":2000,"ti":"TIER E"},{"n":"THE MASQUERADE","te":"NORTH AMERICA","co":"USA","pl":"ATLANTA","ca":1500,"ti":"TIER E"},{"n":"THE MIDWAY","te":"NORTH AMERICA","co":"USA","pl":"SAN FRANCISCO","ca":2300,"ti":"TIER E"},{"n":"THE NOVO","te":"NORTH AMERICA","co":"USA","pl":"LOS ANGELES","ca":1500,"ti":"TIER E"},{"n":"TRIPS","te":"EUROPE","co":"SPAIN","pl":"MURCIA","ca":3500,"ti":"TIER C"},{"n":"UAM","te":"EUROPE","co":"SPAIN","pl":"MADRID","ca":4000,"ti":"TIER C"},{"n":"UNO","te":"EUROPE","co":"MALTA","pl":"ATTARD","ca":2000,"ti":"TIER E"},{"n":"UPS","te":"EUROPE","co":"PORTUGAL","pl":"OFIR","ca":4000,"ti":"TIER C"},{"n":"VEGA","te":"EUROPE","co":"ITALY","pl":"GALLIPOLI","ca":3500,"ti":"TIER C"},{"n":"VULCANO BEACH","te":"EUROPE","co":"ITALY","pl":"GIOIA","ca":3500,"ti":"TIER C"},{"n":"WANDERLUST","te":"EUROPE","co":"FRANCE","pl":"PARIS","ca":2000,"ti":"TIER E"},{"n":"WAREHOUSE LIVE","te":"NORTH AMERICA","co":"USA","pl":"HOUSTON","ca":1300,"ti":"TIER F"},{"n":"WEBSTER HALL","te":"NORTH AMERICA","co":"USA","pl":"NYC","ca":1300,"ti":"TIER F"},{"n":"WHITEMOON","te":"EUROPE","co":"ITALY","pl":"TORINO","ca":3000,"ti":"TIER D"},{"n":"WINTER FEST","te":"LATIN AMERICA","co":"ARGENTINA","pl":"BARILOCHE","ca":30000,"ti":"TIER A"},{"n":"WOWCLUB","te":"EUROPE","co":"SPAIN","pl":"MANRESA","ca":1500,"ti":"TIER E"},{"n":"XS","te":"NORTH AMERICA","co":"USA","pl":"LAS VEGAS","ca":1300,"ti":"TIER F"},{"n":"YAPIRÉ OUTDOOR","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CORRIENTES","ca":9000,"ti":"TIER A"},{"n":"ZEBRA BEACH","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CARLOS PAZ","ca":1000,"ti":"TIER F"},{"n":"ZEBRA CLUB","te":"LATIN AMERICA","co":"ARGENTINA","pl":"CARLOS PAZ","ca":1500,"ti":"TIER E"},{"n":"ZERO TOKYO","te":"ROW","co":"JAPAN","pl":"TOKIO","ca":1800,"ti":"TIER E"},{"n":"ZULU","te":"LATIN AMERICA","co":"ECUADOR","pl":"SALINAS","ca":1000,"ti":"TIER F"},{"n":"HUXLEYS","te":"EUROPE","co":"GERMANY","pl":"BERLIN","ca":1600,"ti":"TIER E"},{"n":"GALLERIE MERCANTILLI","te":"EUROPE","co":"ITALY","pl":"VERONA","ca":2800,"ti":"TIER D"},{"n":"PALACIO DE CONGRESOS","te":"EUROPE","co":"SPAIN","pl":"LEON","ca":4000,"ti":"TIER C"},{"n":"AREA COSTANERA","te":"LATIN AMERICA","co":"ARGENTINA","pl":"QUILMES","ca":1800,"ti":"TIER E"},{"n":"AREA COSTANERA OUTDOOR","te":"LATIN AMERICA","co":"ARGENTINA","pl":"QUILMES","ca":3500,"ti":"TIER C"},{"n":"EVENTARENA WETTINGEN","te":"EUROPE","co":"SWITZERLAND","pl":"ZURICH","ca":3500,"ti":"TIER C"},{"n":"EL CLUB","te":"LATIN AMERICA","co":"ARGENTINA","pl":"BAHÍA BLANCA","ca":3000,"ti":"TIER D"}];
+const CSVURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRiugmo5XTX-1715fjTjFb8wctLVhdHnMLdq3p91Zn9h0KSgMbJrVsPoykgTKtLt1MS_oIlDZbHvMDF/pub?gid=0&single=true&output=csv";
+
+let VENUES=[...VF],ddIdx=-1,selV=null;
+
+const MP={
+ARGENTINA:{H:{mo:[12,1,2],tR:13.9,fR:11.5,oR:.63,cC:13583,dC:6108,oC:.54,cS:15.1,ri:.264},L:{mo:[3,4,5,6,7,8,9,10,11],tR:11.9,fR:12.2,oR:.695,cC:9032,dC:3814,oC:.512,cS:8.0,ri:.201}},
+SPAIN:{H:{mo:[6,7,8],tR:37.4,fR:29.4,oR:.56,cC:30498,dC:9625,oC:.85,cS:22.5,ri:.095},L:{mo:[1,2,3,4,5,9,10,11,12],tR:25.5,fR:13.3,oR:.65,cC:25357,dC:7707,oC:.74,cS:17.8,ri:.174}},
+USA:{H:{mo:[6,7,8],tR:51.7,fR:79.2,oR:.30,cC:34500,dC:16016,oC:.58,cS:10.1,ri:.12},L:{mo:[1,2,3,4,5,9,10,11,12],tR:30.4,fR:18.3,oR:.62,cC:33979,dC:15888,oC:.75,cS:13.5,ri:.209}},
+ITALY:{H:{mo:[6,7,8],tR:31.4,fR:10.0,oR:.47,cC:12176,dC:4135,oC:.72,cS:18.6,ri:.25},L:{mo:[1,2,3,4,5,9,10,11,12],tR:31.0,fR:10.0,oR:.80,cC:10769,dC:3496,oC:.77,cS:17.5,ri:.366}},
+FRANCE:{H:{mo:[6,7,8],tR:37.4,fR:29.4,oR:.56,cC:15158,dC:29823,oC:.83,cS:22.5,ri:.095},L:{mo:[1,2,3,4,5,9,10,11,12],tR:25.5,fR:13.3,oR:.65,cC:17121,dC:29823,oC:.91,cS:17.8,ri:.174}},
+LATAM_EX_ARG:{H:{mo:[12,1,2],tR:19.8,fR:12.0,oR:.80,cC:6314,dC:1597,oC:.67,cS:22.4,ri:.50},L:{mo:[3,4,5,6,7,8,9,10,11],tR:26.4,fR:16.6,oR:.66,cC:8199,dC:3582,oC:.72,cS:24.9,ri:.50}},
+EUROPE_EX_SP_IT_FR:{H:{mo:[6,7,8],tR:31.4,fR:10.0,oR:.47,cC:26927,dC:10810,oC:.67,cS:18.6,ri:.30},L:{mo:[1,2,3,4,5,9,10,11,12],tR:31.0,fR:10.0,oR:.80,cC:21863,dC:8726,oC:.81,cS:17.5,ri:.366}},
+ROW:{H:{mo:[6,7,8],tR:31.8,fR:7.0,oR:.54,cC:20454,dC:9606,oC:.63,cS:16.7,ri:.403},L:{mo:[1,2,3,4,5,9,10,11,12],tR:29.2,fR:6.0,oR:.61,cC:20454,dC:9606,oC:.63,cS:13.1,ri:.396}}
+};
+
+const CM={ARGENTINA:'ARGENTINA',SPAIN:'SPAIN',USA:'USA',ITALY:'ITALY',FRANCE:'FRANCE',
+LATAM_EX_ARG:'LATAM_EX_ARG',EUROPE_EX_SP_IT_FR:'EUROPE_EX_SP_IT_FR',ROW:'ROW',
+AUSTRALIA:'ROW',JAPAN:'ROW',UAE:'ROW',UK:'EUROPE_EX_SP_IT_FR',GERMANY:'EUROPE_EX_SP_IT_FR',
+NETHERLANDS:'EUROPE_EX_SP_IT_FR',PORTUGAL:'EUROPE_EX_SP_IT_FR',SWITZERLAND:'EUROPE_EX_SP_IT_FR',
+ANDORRA:'EUROPE_EX_SP_IT_FR',BELGIUM:'EUROPE_EX_SP_IT_FR',MALTA:'EUROPE_EX_SP_IT_FR',
+LUXEMBURGO:'EUROPE_EX_SP_IT_FR',SWEDEN:'EUROPE_EX_SP_IT_FR',DENMARK:'EUROPE_EX_SP_IT_FR',
+NORWAY:'EUROPE_EX_SP_IT_FR',GEORGIA:'EUROPE_EX_SP_IT_FR',MEXICO:'LATAM_EX_ARG',
+CHILE:'LATAM_EX_ARG',BRAZIL:'LATAM_EX_ARG',URUGUAY:'LATAM_EX_ARG',COLOMBIA:'LATAM_EX_ARG',
+PERU:'LATAM_EX_ARG',BOLIVIA:'LATAM_EX_ARG',PARAGUAY:'LATAM_EX_ARG',ECUADOR:'LATAM_EX_ARG',
+PANAMA:'LATAM_EX_ARG','COSTA RICA':'LATAM_EX_ARG','DOMINICAN REPUBLIC':'LATAM_EX_ARG',
+HONDURAS:'LATAM_EX_ARG','EL SALVADOR':'LATAM_EX_ARG',NICARAGUA:'LATAM_EX_ARG',
+GUATEMALA:'LATAM_EX_ARG',CANADA:'USA'};
+
+const RD=[
+{k:'dm',lb:'Demanda estimada',w:.30,o:['1 — Sin data, mercado frío','2 — Demanda incierta, poca historia','3 — Historia moderada, demanda probable','4 — Demanda probada, shows similares vendidos','5 — Preventa sólida / sold out esperado']},
+{k:'hs',lb:'Historial del venue / mercado',w:.30,o:['1 — Primera vez en el país','2 — 1-2 shows previos en el mercado','3 — 3-5 shows previos','4 — Mercado conocido, relaciones establecidas','5 — Venue / mercado probado, +5 shows exitosos']},
+{k:'op',lb:'Capacidad operativa local',w:.20,o:['1 — Sin equipo ni promotor local','2 — Promotor nuevo, sin track record con Bresh','3 — Promotor con algo de historia','4 — Equipo local confiable y probado','5 — Operación consolidada con Bresh']},
+{k:'cp',lb:'Cumplimiento del productor local',w:.15,o:['1 — Sin contrato, sin garantías','2 — Productor con incumplimientos previos','3 — Historial mixto, requiere seguimiento','4 — Productor confiable, cumple compromisos','5 — Track record sólido, relación de largo plazo']},
+{k:'mc',lb:'Estabilidad económica / cambiaria',w:.05,o:['1 — Crisis activa / hiperinflación','2 — Alta volatilidad cambiaria','3 — Riesgo macroeconómico moderado','4 — País estable, riesgo acotado','5 — Moneda sólida, sin riesgo macro relevante']}
+];
+
+let ST={step:1,market:null,season:null,bm:null};
+const fmt=n=>isNaN(n)||n===null?'—':'$'+Math.round(n).toLocaleString('es-AR');
+const fmtP=n=>isNaN(n)||n===null?'—':Math.round(n*100)+'%';
+
+// CSV loader
+async function loadCSV(){
+  try{
+    const r=await fetch(CSVURL);
+    if(!r.ok)throw new Error(r.status);
+    const txt=await r.text();
+    const lines=txt.trim().split('\n');
+    const h=lines[0].split(',').map(x=>x.trim().replace(/^"|"$/g,'').toLowerCase());
+    const iN=h.findIndex(x=>x.includes('venue name')||x==='venue name');
+    const iT=h.findIndex(x=>x.includes('territory'));
+    const iC=h.findIndex(x=>x.includes('country'));
+    const iP=h.findIndex(x=>x.includes('plaza'));
+    const iCa=h.findIndex(x=>x.includes('capacity'));
+    const iTi=h.findIndex(x=>x.includes('tier'));
+    const out=[];
+    for(let i=1;i<lines.length;i++){
+      const c=lines[i].split(',').map(x=>x.trim().replace(/^"|"$/g,''));
+      const n=(c[iN]||'').toUpperCase().trim();
+      const ca=parseInt((c[iCa]||'').replace(/[^0-9]/g,''))||0;
+      if(n&&n!=='TBC'&&ca>0) out.push({n,te:c[iT]||'',co:c[iC]||'',pl:c[iP]||'',ca,ti:c[iTi]||''});
+    }
+    if(out.length>20){
+      VENUES=out;
+      document.getElementById('sync').textContent='✅ '+out.length+' venues · en vivo';
+      document.getElementById('sync').className='sync s-ok';
+      document.getElementById('vstatus').textContent='Escribí para buscar entre '+out.length+' venues';
+    } else throw new Error('few');
+  }catch(e){
+    document.getElementById('sync').textContent='⚠️ Datos locales ('+VENUES.length+')';
+    document.getElementById('sync').className='sync s-wn';
+    document.getElementById('vstatus').textContent='Escribí para buscar entre '+VENUES.length+' venues';
+  }
+}
+
+// Autocomplete
+function fv(q){
+  const dd=document.getElementById('dd');
+  const v=q.trim().toUpperCase();
+  if(!v){dd.classList.remove('open');return;}
+  const m=VENUES.filter(x=>x.n.includes(v)).slice(0,12);
+  if(!m.length){
+    dd.innerHTML='<div class="dem">Sin resultados — podés ingresar la capacidad manualmente</div>';
+    dd.classList.add('open');
+    document.getElementById('mf').style.display='grid';
+    return;
+  }
+  dd.innerHTML=m.map((v,i)=>`<div class="ddi" onmousedown="sv(${i})"><span class="din">${v.n}</span><span class="dme">${v.pl} · ${v.co}</span><span class="dtr">${v.ti}</span></div>`).join('');
+  dd._m=m; ddIdx=-1;
+  dd.classList.add('open');
+}
+function kn(e){
+  const dd=document.getElementById('dd');
+  const it=dd.querySelectorAll('.ddi');
+  if(!it.length)return;
+  if(e.key==='ArrowDown'){e.preventDefault();ddIdx=Math.min(ddIdx+1,it.length-1);hdd(it);}
+  else if(e.key==='ArrowUp'){e.preventDefault();ddIdx=Math.max(ddIdx-1,0);hdd(it);}
+  else if(e.key==='Enter'&&ddIdx>=0){e.preventDefault();sv(ddIdx);}
+  else if(e.key==='Escape')closeDD();
+}
+function hdd(it){it.forEach((el,i)=>el.classList.toggle('hi',i===ddIdx));if(ddIdx>=0)it[ddIdx].scrollIntoView({block:'nearest'});}
+function sv(i){
+  const dd=document.getElementById('dd');
+  const v=dd._m&&dd._m[i];
+  if(!v)return;
+  selV=v;
+  document.getElementById('vi').value=v.n;
+  document.getElementById('cap').value=v.ca;
+  document.getElementById('capht').textContent='✅ Capacidad cargada desde DB ('+v.ca.toLocaleString('es-AR')+')';
+  document.getElementById('mf').style.display='none';
+  document.getElementById('chiprow').innerHTML=
+    `<span><i class="ti ti-map-pin" style="font-size:13px;vertical-align:-2px"></i> <strong>${v.pl}</strong></span>
+     <span><i class="ti ti-flag" style="font-size:13px;vertical-align:-2px"></i> ${v.co}</span>
+     <span><i class="ti ti-users" style="font-size:13px;vertical-align:-2px"></i> Cap: <strong>${v.ca.toLocaleString('es-AR')}</strong></span>
+     <span><i class="ti ti-tag" style="font-size:13px;vertical-align:-2px"></i> ${v.ti}</span>`;
+  document.getElementById('chip').style.display='block';
+  document.getElementById('vstatus').textContent='✅ Venue encontrado en DB';
+  closeDD(); uc();
+}
+function closeDD(){document.getElementById('dd').classList.remove('open');}
+
+// Market
+function dm(){
+  if(selV){const c=selV.co.toUpperCase().trim();return CM[c]||null;}
+  return document.getElementById('msel').value||null;
+}
+function gs(mk,mo){if(!mk||!mo)return null;const p=MP[mk];return p&&p.H.mo.includes(parseInt(mo))?'H':'L';}
+
+function uc(){
+  const mk=dm(),mo=document.getElementById('month').value,sn=gs(mk,mo);
+  if(!mk||!sn){ST.bm=null;return;}
+  ST.market=mk;ST.season=sn;ST.bm=MP[mk][sn];
+  const b=ST.bm,cap=parseInt(document.getElementById('cap').value)||2000;
+  document.getElementById('bmc').textContent='Benchmark: '+fmt(b.cC);
+  document.getElementById('bmd').textContent='Benchmark: '+fmt(b.dC);
+  document.getElementById('bmt').textContent='Benchmark: '+Math.round(cap*b.oC).toLocaleString('es-AR')+' tickets';
+  document.getElementById('bmp').textContent='Benchmark: '+fmt(b.tR);
+  document.getElementById('bmf').textContent='Benchmark: '+fmt(b.fR);
+  document.getElementById('bma').textContent='Auto: '+fmt(cap*b.cS)+' (cap × '+b.cS+' USD/seat)';
+}
+
+// Risk
+function cr(){
+  let sc=0,tot=0;
+  RD.forEach(d=>{const el=document.getElementById('rk'+d.k);if(el&&el.value){sc+=parseFloat(el.value)*d.w;tot+=d.w;}});
+  if(!tot)return ST.bm?ST.bm.ri:.205;
+  const s=sc/tot;
+  if(s>=4.5)return .065;if(s>=3.5)return .12;if(s>=2.5)return .205;if(s>=1.5)return .33;return .455;
+}
+function ur(){
+  const r=cr();
+  document.getElementById('rr').textContent=Math.round(r*100)+'%';
+  let tx='',co='';
+  if(r<=.08){tx='🟢 Riesgo bajo — considerar residencia activamente';co='var(--ok-tx)';}
+  else if(r<=.15){tx='🟡 Riesgo moderado-bajo — cachet óptimo bien calibrado';co='var(--wn-tx)';}
+  else if(r<=.25){tx='🟡 Riesgo moderado — cachet conservador, no residencia';co='var(--wn-tx)';}
+  else if(r<=.40){tx='🔴 Riesgo alto — solo cachet con garantías';co='var(--er-tx)';}
+  else{tx='🔴 Riesgo muy alto — no participar o cachet mínimo';co='var(--er-tx)';}
+  const el=document.getElementById('ri');el.textContent=tx;el.style.color=co;
+}
+function brf(){
+  const el=document.getElementById('riskf');el.innerHTML='';
+  RD.forEach(d=>{
+    const dv=document.createElement('div');dv.className='f';dv.style.marginBottom='12px';
+    dv.innerHTML=`<label>${d.lb} <span style="color:var(--text3);font-size:11px">(${Math.round(d.w*100)}%)</span></label>
+      <select id="rk${d.k}" onchange="ur()"><option value="">Seleccioná...</option>
+      ${d.o.map((o,i)=>`<option value="${i+1}">${o}</option>`).join('')}</select>`;
+    el.appendChild(dv);
+  });
+}
+
+// Compute
+function comp(){
+  const b=ST.bm;if(!b)return null;
+  const cap=parseFloat(document.getElementById('cap').value)||2000;
+  const cF=parseFloat(document.getElementById('cf').value)||0;
+  const bC=parseFloat(document.getElementById('bc').value)||b.dC;
+  const tk=parseFloat(document.getElementById('tk').value)||Math.round(cap*b.oC);
+  const tP=parseFloat(document.getElementById('tp').value)||b.tR;
+  const fn=parseFloat(document.getElementById('fb').value)||b.fR;
+  const pC=parseFloat(document.getElementById('pc').value)||(cap*b.cS);
+  const vR=parseFloat(document.getElementById('vr').value)||(pC*.12);
+  const cS=(parseFloat(document.getElementById('cs').value)||30)/100;
+  const ri=cr();
+  const tR=tk*tP,fR=tk*fn,gre=tR+fR;
+  const cmA=cF-bC,cmC=-(pC*cS),cmD=gre-(pC+vR);
+  const vC=gre-pC-cF;
+  const opt=Math.min(Math.max(cmC*(1-ri),0),Math.max(vC,0));
+  const be=pC*cS/tP;
+  return{gre,tR,fR,pC,vR,cF,bC,cmA,cmC,cmD,opt,be,beO:be/cap,ri,cS,vC,cap};
+}
+
+// Render
+function rr(){
+  const r=comp();if(!r)return;
+  const vn=selV?selV.n:(document.getElementById('vi').value||'—');
+  document.getElementById('rsub').textContent=vn+' · '+(ST.market||'')+(ST.season?' ('+ST.season+')':'');
+  document.getElementById('rg').textContent=fmt(r.gre);
+  const ra=document.getElementById('ra');ra.textContent=fmt(r.cmA);ra.className='mv '+(r.cmA>=0?'ok':'er');
+  document.getElementById('ro').textContent=fmt(r.opt);
+  document.getElementById('rb').textContent=Math.round(r.be).toLocaleString('es-AR');
+  const sc=[
+    {lb:'A — Cachet actual',cm:r.cmA,net:r.cF,cost:r.bC,ds:'Fee pactado net de costos',win:r.cmA>0&&r.cmA>=r.cmC},
+    {lb:'B — Cachet óptimo',cm:r.opt-r.bC,net:r.opt,cost:r.bC,ds:'Ceiling de negociación',win:false},
+    {lb:'C — Residencia',cm:r.cmC,net:0,cost:r.pC*r.cS,ds:Math.round(r.cS*100)+'% share costos',win:r.cmC>r.cmA&&r.cmC>0},
+  ];
+  document.getElementById('scc').innerHTML=sc.map(s=>{
+    const pos=s.cm>=0;
+    return`<div class="sc ${s.win?'win':''}">${s.win?'<span class="bdg">Recomendado</span>':''}<div class="slb">${s.lb}</div><div class="scm" style="color:${pos?'var(--ok-tx)':'var(--er-tx)'}">${fmt(s.cm)}</div><div class="sdt">Net: ${fmt(s.net)}</div><div class="sdt">Costo: ${fmt(s.cost)}</div><div class="sdt" style="margin-top:4px;font-style:italic">${s.ds}</div></div>`;
+  }).join('');
+  document.getElementById('pnl').innerHTML=`
+    <div class="rd"><span class="rl">Ticket revenue (bruto)</span><span>${fmt(r.tR)}</span></div>
+    <div class="rd"><span class="rl">F&amp;B revenue (bruto)</span><span>${fmt(r.fR)}</span></div>
+    <div class="rd"><span class="rl" style="font-weight:500">GRE total</span><span style="font-weight:500">${fmt(r.gre)}</span></div>
+    <div class="rd"><span class="rl">Costo producción bruto</span><span>${fmt(r.pC)}</span></div>
+    <div class="rd"><span class="rl">Alquiler venue</span><span>${fmt(r.vR)}</span></div>
+    <div class="rd"><span class="rl">CM bruto del evento</span><span style="color:${r.gre-r.pC>=0?'var(--ok-tx)':'var(--er-tx)'}">${fmt(r.gre-r.pC)}</span></div>
+    <hr>
+    <div class="rd"><span class="rl">Break-even tickets (residencia C)</span><span>${Math.round(r.be).toLocaleString('es-AR')} (${fmtP(r.beO)} occ.)</span></div>
+    <div class="rd"><span class="rl">Prima de riesgo aplicada</span><span>${Math.round(r.ri*100)}%</span></div>
+    <div class="rd"><span class="rl">Viabilidad venue con Cachet A</span><span style="color:${r.vC>=0?'var(--ok-tx)':'var(--er-tx)'}">${r.vC>=0?'✅ Venue gana plata':'❌ Venue pierde plata'}</span></div>`;
+  let vd='',bg='';
+  if(r.cF>0&&r.cmA>0&&r.cF>r.opt){vd='🟢 Cachet por encima del óptimo ('+fmt(r.cF)+' vs óptimo '+fmt(r.opt)+'). Posición favorable para Bresh.';bg='var(--ok-bg)';}
+  else if(r.cF>0&&r.cmA>0){vd='🟡 Cachet dentro del rango. Margen para negociar hasta '+fmt(r.opt)+'.';bg='var(--wn-bg)';}
+  else if(!r.cF){vd='⚪ Ingresá el cachet fee para ver el veredicto.';bg='var(--bg2)';}
+  else{vd='🔴 CM negativo ('+fmt(r.cmA)+'). Revisar costos directos o renegociar el fee.';bg='var(--er-bg)';}
+  const vb=document.getElementById('vb');vb.style.background=bg;document.getElementById('vt').textContent=vd;
+}
+
+function go(n){
+  document.getElementById('s'+ST.step).classList.remove('active');
+  ST.step=n;
+  document.getElementById('s'+n).classList.add('active');
+  ['pb1','pb2','pb3','pb4'].forEach((id,i)=>{document.getElementById(id).className='pb'+(i+1<n?' done':i+1===n?' active':'');});
+  document.getElementById('slbl').textContent='Paso '+n+' de 4';
+  if(n===3)brf();
+  if(n===4)rr();
+  window.scrollTo(0,0);
+}
+
+loadCSV();
+</script></body></html>
